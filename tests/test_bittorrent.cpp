@@ -27,7 +27,21 @@ int main(int argc, char** argv) {
         buildInfo.makeProto().formData(std::vector<char>{
             reply.value().data(), reply.value().data() + reply.value().size()});
     }
+    std::cout << reply.value() << std::endl;
     std::cout << NEKO_NAMESPACE::SerializableToString(buildInfo) << std::endl;
+
+    GetTorrentListParameters params;
+    params.filter = "all";
+    params.limit  = 30;
+    auto reply1   = ilias_wait session.request(QB_GET_TORRENT_LIST,
+                                               params.makeProto().toData());
+    if (reply1) {
+        std::vector<GetTorrentListReturns> list =
+            NEKO_NAMESPACE::ListFromData<GetTorrentListReturns>(reply1.value());
+        for (const auto& f : list) {
+            std::cout << NEKO_NAMESPACE::SerializableToString(f) << std::endl;
+        }
+    }
 
     ret = session.logout();
     if (ret != QBittorrentSession::NoError) {

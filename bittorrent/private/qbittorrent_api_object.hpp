@@ -4,8 +4,8 @@
 #include <string>
 #include <variant>
 
-#include "proto_base.hpp"
 #include "json_serializer.hpp"
+#include "proto_base.hpp"
 #include "serializer_base.hpp"
 
 typedef std::variant<int, std::string> ScanDirs;
@@ -72,13 +72,116 @@ bool ParametersSerializer::get(const char* name, const size_t len,
     return false;
 }
 
+namespace {
+template <typename T>
+void write_string_to_url(T& writer, std::string_view value) {
+    for (auto& c : value) {
+        switch (c) {
+            case ' ':
+                writer.push_back('%');
+                writer.push_back('2');
+                writer.push_back('0');
+                break;
+            case '/':
+                writer.push_back('%');
+                writer.push_back('2');
+                writer.push_back('F');
+                break;
+            case '&':
+                writer.push_back('%');
+                writer.push_back('2');
+                writer.push_back('6');
+                break;
+            case '=':
+                writer.push_back('%');
+                writer.push_back('3');
+                writer.push_back('D');
+                break;
+            case '#':
+                writer.push_back('%');
+                writer.push_back('2');
+                writer.push_back('3');
+                break;
+            default:
+                writer.push_back(c);
+                break;
+        }
+    }
+}
+}  // namespace
+
+template <typename WriterT, typename ValueT, typename T>
+struct ParametersConvert<WriterT, ValueT, std::optional<T>, void> {
+    static bool doumpToString(const char* name, const size_t len,
+                              WriterT& writer, const std::optional<T>& value) {
+        if (!value.has_value()) {
+            return true;
+        }
+        return ParametersConvert<WriterT, ValueT, T>::doumpToString(
+            name, len, writer, *value);
+    }
+};
+
 template <typename WriterT, typename ValueT>
 struct ParametersConvert<WriterT, ValueT, std::string, void> {
     static bool doumpToString(const char* name, const size_t len,
                               WriterT& writer, const std::string& value) {
-        writer.insert(writer.end(), name, name + len);
+        if (writer.size() > 0) writer.push_back('&');
+        write_string_to_url(writer, {name, len});
         writer.push_back('=');
-        writer.insert(writer.end(), value.begin(), value.end());
+        write_string_to_url(writer, value);
+        return true;
+    }
+};
+
+template <typename WriterT, typename ValueT>
+struct ParametersConvert<WriterT, ValueT, uint64_t, void> {
+    static bool doumpToString(const char* name, const size_t len,
+                              WriterT& writer, const uint64_t& value) {
+        if (writer.size() > 0) writer.push_back('&');
+        write_string_to_url(writer, {name, len});
+        writer.push_back('=');
+        auto str = std::to_string(value);
+        writer.insert(writer.end(), str.begin(), str.end());
+        return true;
+    }
+};
+
+template <typename WriterT, typename ValueT>
+struct ParametersConvert<WriterT, ValueT, int64_t, void> {
+    static bool doumpToString(const char* name, const size_t len,
+                              WriterT& writer, const int64_t& value) {
+        if (writer.size() > 0) writer.push_back('&');
+        write_string_to_url(writer, {name, len});
+        writer.push_back('=');
+        auto str = std::to_string(value);
+        writer.insert(writer.end(), str.begin(), str.end());
+        return true;
+    }
+};
+
+template <typename WriterT, typename ValueT>
+struct ParametersConvert<WriterT, ValueT, double, void> {
+    static bool doumpToString(const char* name, const size_t len,
+                              WriterT& writer, const double& value) {
+        if (writer.size() > 0) writer.push_back('&');
+        write_string_to_url(writer, {name, len});
+        writer.push_back('=');
+        auto str = std::to_string(value);
+        writer.insert(writer.end(), str.begin(), str.end());
+        return true;
+    }
+};
+
+template <typename WriterT, typename ValueT>
+struct ParametersConvert<WriterT, ValueT, bool, void> {
+    static bool doumpToString(const char* name, const size_t len,
+                              WriterT& writer, const bool& value) {
+        if (writer.size() > 0) writer.push_back('&');
+        write_string_to_url(writer, {name, len});
+        writer.push_back('=');
+        std::string str = value ? "true" : "false";
+        writer.insert(writer.end(), str.begin(), str.end());
         return true;
     }
 };
@@ -109,4 +212,40 @@ struct JsonConvert<WriterT, ValueT, ScanDirs, void> {
         return false;
     }
 };
+
+template <typename WriterT, typename ValueT, typename T>
+struct JsonConvert<WriterT, ValueT, std::optional<T>, void> {
+    static bool toJsonValue(WriterT& writer, const std::optional<T> value) {
+        if (value.has_value()) {
+            return JsonConvert<WriterT, ValueT, T>::toJsonValue(writer, *value);
+        }
+        return true;
+    }
+    static bool fromJsonValue(std::optional<T>* dst, const ValueT& value) {
+        T ret;
+        if (JsonConvert<WriterT, ValueT, T>::fromJsonValue(&ret, value)) {
+            dst = ret;
+            return true;
+        }
+        return true;
+    }
+};
+
+template <typename T>
+std::vector<T> ListFromData(std::string_view data) {
+    std::vector<T> ret;
+    if (data.empty()) return ret;
+    rapidjson::Document doc;
+    doc.Parse(data.data(), data.size());
+    if (doc.HasParseError()) {
+        return ret;
+    }
+    if (!doc.IsArray()) {
+        return ret;
+    }
+    JsonConvert<JsonSerializer::WriterType, JsonSerializer::ValueType,
+                std::vector<T>>::fromJsonValue(&ret, doc);
+    return ret;
+}
+
 NEKO_END_NAMESPACE

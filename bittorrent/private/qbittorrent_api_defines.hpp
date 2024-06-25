@@ -4,9 +4,9 @@
 #include <cstdint>
 #include <string>
 
-#include "proto_base.hpp"
 #include "json_serializer.hpp"
 #include "json_serializer_container.hpp"
+#include "proto_base.hpp"
 #include "qbittorrent_api_object.hpp"
 #include "serializer_base.hpp"
 
@@ -452,7 +452,7 @@ struct GetLogParameters {
     int64_t last_known_id = {};  // Exclude messages with "message id" <=
                                  // `last_known_id` (default: `-1`)
     NEKO_SERIALIZER(normal, info, warning, critical, last_known_id)
-    NEKO_DECLARE_PROTOCOL(GetLogParameters, NEKO_NAMESPACE::JsonSerializer)
+    NEKO_DECLARE_PROTOCOL(GetLogParameters, NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get log Parameters
 
 // define struct for Get log
@@ -472,7 +472,7 @@ struct GetPeerLogParameters {
     int64_t last_known_id = {};  // Exclude messages with "message id" <=
                                  // `last_known_id` (default: `-1`)
     NEKO_SERIALIZER(last_known_id)
-    NEKO_DECLARE_PROTOCOL(GetPeerLogParameters, NEKO_NAMESPACE::JsonSerializer)
+    NEKO_DECLARE_PROTOCOL(GetPeerLogParameters, NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get peer log Parameters
 
 // define struct for Get peer log
@@ -493,7 +493,7 @@ struct GetMainDataParameters {
                        // server reply, `full_update` will be `true` (see the
                        // server reply details for more info)
     NEKO_SERIALIZER(rid)
-    NEKO_DECLARE_PROTOCOL(GetMainDataParameters, NEKO_NAMESPACE::JsonSerializer)
+    NEKO_DECLARE_PROTOCOL(GetMainDataParameters, NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get main data Parameters
 
 // define struct for Get torrent peers data
@@ -505,7 +505,7 @@ struct GetTorrentPeersDataParameters {
                        // server reply details for more info)
     NEKO_SERIALIZER(hash, rid)
     NEKO_DECLARE_PROTOCOL(GetTorrentPeersDataParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get torrent peers data Parameters
 
 // define struct for Get global transfer info
@@ -543,7 +543,7 @@ struct SetGlobalDownloadLimitParameters {
         {};  // The global download speed limit to set in bytes/second
     NEKO_SERIALIZER(limit)
     NEKO_DECLARE_PROTOCOL(SetGlobalDownloadLimitParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Set global download limit Parameters
 
 // define struct for Set global upload limit
@@ -551,7 +551,7 @@ struct SetGlobalUploadLimitParameters {
     int64_t limit = {};  // The global upload speed limit to set in bytes/second
     NEKO_SERIALIZER(limit)
     NEKO_DECLARE_PROTOCOL(SetGlobalUploadLimitParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Set global upload limit Parameters
 
 // define struct for Ban peers
@@ -560,36 +560,36 @@ struct BanPeersParameters {
         {};  // The peer to ban, or multiple peers separated by a pipe `\|`.
              // Each peer is a colon-separated `host:port`
     NEKO_SERIALIZER(peers)
-    NEKO_DECLARE_PROTOCOL(BanPeersParameters, NEKO_NAMESPACE::JsonSerializer)
+    NEKO_DECLARE_PROTOCOL(BanPeersParameters, NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Ban peers Parameters
 
 // define struct for Get torrent list
 struct GetTorrentListParameters {
-    std::string filter =
+    std::optional<std::string> filter =
         {};  // Filter torrent list by state. Allowed state filters: `all`,
              // `downloading`, `seeding`, `completed`, `paused`, `active`,
              // `inactive`, `resumed`, `stalled`, `stalled_uploading`,
              // `stalled_downloading`, `errored`
-    std::string category =
+    std::optional<std::string> category =
         {};  // Get torrents with the given category (empty string means
              // "without category"; no "category" parameter means "any
              // category"). Remember to URL-encode the category name. For
              // example, `My category` becomes `My%20category`
-    std::string tag =
+    std::optional<std::string> tag =
         {};  // Get torrents with the given tag (empty string means "without
              // tag"; no "tag" parameter means "any tag". Remember to URL-encode
              // the category name. For example, `My tag` becomes `My%20tag`
-    std::string sort = {};  // Sort torrents by given key. They can be sorted
+    std::optional<std::string> sort = {};  // Sort torrents by given key. They can be sorted
                             // using any field of the response's JSON array
                             // (which are documented below) as the sort key.
-    bool reverse   = {};    // Enable reverse sorting. Defaults to `false`
-    int64_t limit  = {};    // Limit the number of torrents returned
-    int64_t offset = {};    // Set offset (if less than 0, offset from end)
-    std::string hashes =
+    std::optional<bool> reverse   = {};    // Enable reverse sorting. Defaults to `false`
+    std::optional<int64_t> limit  = {};    // Limit the number of torrents returned
+    std::optional<int64_t> offset = {};    // Set offset (if less than 0, offset from end)
+    std::optional<std::string> hashes =
         {};  // Filter by hashes. Can contain multiple hashes separated by `\|`
     NEKO_SERIALIZER(filter, category, tag, sort, reverse, limit, offset, hashes)
     NEKO_DECLARE_PROTOCOL(GetTorrentListParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get torrent list Parameters
 
 // define struct for Get torrent list
@@ -680,7 +680,7 @@ struct GetTorrentGenericPropertiesParameters {
                             // generic properties of
     NEKO_SERIALIZER(hash)
     NEKO_DECLARE_PROTOCOL(GetTorrentGenericPropertiesParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get torrent generic properties Parameters
 
 // define struct for Get torrent generic properties
@@ -737,7 +737,7 @@ struct GetTorrentTrackersParameters {
         {};  // The hash of the torrent you want to get the trackers of
     NEKO_SERIALIZER(hash)
     NEKO_DECLARE_PROTOCOL(GetTorrentTrackersParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get torrent trackers Parameters
 
 // define struct for Get torrent trackers
@@ -771,7 +771,7 @@ struct GetTorrentWebSeedsParameters {
         {};  // The hash of the torrent you want to get the webseeds of
     NEKO_SERIALIZER(hash)
     NEKO_DECLARE_PROTOCOL(GetTorrentWebSeedsParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get torrent web seeds Parameters
 
 // define struct for Get torrent web seeds
@@ -791,7 +791,7 @@ struct GetTorrentContentsParameters {
              // contain multiple values separated by `\|`.
     NEKO_SERIALIZER(hash, indexes)
     NEKO_DECLARE_PROTOCOL(GetTorrentContentsParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get torrent contents Parameters
 
 // define struct for Get torrent contents
@@ -819,7 +819,7 @@ struct GetTorrentPiecesStatesParameters {
         {};  // The hash of the torrent you want to get the pieces' states of
     NEKO_SERIALIZER(hash)
     NEKO_DECLARE_PROTOCOL(GetTorrentPiecesStatesParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get torrent pieces states Parameters
 
 // define struct for Get torrent pieces hashes
@@ -828,7 +828,7 @@ struct GetTorrentPiecesHashesParameters {
         {};  // The hash of the torrent you want to get the pieces' hashes of
     NEKO_SERIALIZER(hash)
     NEKO_DECLARE_PROTOCOL(GetTorrentPiecesHashesParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get torrent pieces hashes Parameters
 
 // define struct for Pause torrents
@@ -839,7 +839,7 @@ struct PauseTorrentsParameters {
              // torrents, or set to `all`, to pause all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(PauseTorrentsParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Pause torrents Parameters
 
 // define struct for Resume torrents
@@ -850,7 +850,7 @@ struct ResumeTorrentsParameters {
              // torrents, or set to `all`, to resume all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(ResumeTorrentsParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Resume torrents Parameters
 
 // define struct for Delete torrents
@@ -861,7 +861,7 @@ struct DeleteTorrentsParameters {
              // torrents, or set to `all`, to delete all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(DeleteTorrentsParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Delete torrents Parameters
 
 // define struct for Recheck torrents
@@ -872,7 +872,7 @@ struct RecheckTorrentsParameters {
              // torrents, or set to `all`, to recheck all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(RecheckTorrentsParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Recheck torrents Parameters
 
 // define struct for Reannounce torrents
@@ -883,7 +883,7 @@ struct ReannounceTorrentsParameters {
              // multiple torrents, or set to `all`, to reannounce all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(ReannounceTorrentsParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Reannounce torrents Parameters
 
 // define struct for Edit trackers
@@ -893,7 +893,7 @@ struct EditTrackersParameters {
     std::string newUrl  = {};  // The new URL to replace the `origUrl`
     NEKO_SERIALIZER(hash, origUrl, newUrl)
     NEKO_DECLARE_PROTOCOL(EditTrackersParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Edit trackers Parameters
 
 // define struct for Remove trackers
@@ -902,7 +902,7 @@ struct RemoveTrackersParameters {
     std::string urls = {};  // URLs to remove, separated by `\|`
     NEKO_SERIALIZER(hash, urls)
     NEKO_DECLARE_PROTOCOL(RemoveTrackersParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Remove trackers Parameters
 
 // define struct for Add peers
@@ -913,7 +913,7 @@ struct AddPeersParameters {
         {};  // The peer to add, or multiple peers separated by a pipe `\|`.
              // Each peer is a colon-separated `host:port`
     NEKO_SERIALIZER(hashes, peers)
-    NEKO_DECLARE_PROTOCOL(AddPeersParameters, NEKO_NAMESPACE::JsonSerializer)
+    NEKO_DECLARE_PROTOCOL(AddPeersParameters, NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Add peers Parameters
 
 // define struct for Increase torrent priority
@@ -925,7 +925,7 @@ struct IncreaseTorrentPriorityParameters {
              // increase the priority of all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(IncreaseTorrentPriorityParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Increase torrent priority Parameters
 
 // define struct for Decrease torrent priority
@@ -937,7 +937,7 @@ struct DecreaseTorrentPriorityParameters {
              // decrease the priority of all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(DecreaseTorrentPriorityParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Decrease torrent priority Parameters
 
 // define struct for Maximal torrent priority
@@ -949,7 +949,7 @@ struct MaximalTorrentPriorityParameters {
              // to `all`, to set all torrents to the maximum priority.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(MaximalTorrentPriorityParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Maximal torrent priority Parameters
 
 // define struct for Minimal torrent priority
@@ -961,7 +961,7 @@ struct MinimalTorrentPriorityParameters {
              // to `all`, to set all torrents to the minimum priority.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(MinimalTorrentPriorityParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Minimal torrent priority Parameters
 
 // define struct for Set file priority
@@ -972,7 +972,7 @@ struct SetFilePriorityParameters {
                              // API](#get-torrent-contents) for possible values)
     NEKO_SERIALIZER(hash, id, priority)
     NEKO_DECLARE_PROTOCOL(SetFilePriorityParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Set file priority Parameters
 
 // define struct for Set torrent share limit
@@ -993,7 +993,7 @@ struct SetTorrentShareLimitParameters {
     NEKO_SERIALIZER(hashes, ratioLimit, seedingTimeLimit,
                     inactiveSeedingTimeLimit)
     NEKO_DECLARE_PROTOCOL(SetTorrentShareLimitParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Set torrent share limit Parameters
 
 // define struct for Toggle sequential download
@@ -1005,7 +1005,7 @@ struct ToggleSequentialDownloadParameters {
              // set to `all`, to toggle sequential download for all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(ToggleSequentialDownloadParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Toggle sequential download Parameters
 
 // define struct for Set first last piece priority
@@ -1018,7 +1018,7 @@ struct SetFirstLastPiecePriorityParameters {
              // piece priority for all torrents.
     NEKO_SERIALIZER(hashes)
     NEKO_DECLARE_PROTOCOL(SetFirstLastPiecePriorityParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Set first last piece priority Parameters
 
 // define struct for Rename file
@@ -1027,7 +1027,7 @@ struct RenameFileParameters {
     std::string oldPath = {};  // The old path of the torrent
     std::string newPath = {};  // The new path to use for the file
     NEKO_SERIALIZER(hash, oldPath, newPath)
-    NEKO_DECLARE_PROTOCOL(RenameFileParameters, NEKO_NAMESPACE::JsonSerializer)
+    NEKO_DECLARE_PROTOCOL(RenameFileParameters, NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Rename file Parameters
 
 // define struct for Rename folder
@@ -1037,7 +1037,7 @@ struct RenameFolderParameters {
     std::string newPath = {};  // The new path to use for the file
     NEKO_SERIALIZER(hash, oldPath, newPath)
     NEKO_DECLARE_PROTOCOL(RenameFolderParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Rename folder Parameters
 
 // define struct for Start search
@@ -1052,14 +1052,14 @@ struct StartSearchParameters {
              // Available categories depend on the specified `plugins`. Also
              // supports `all`
     NEKO_SERIALIZER(pattern, plugins, category)
-    NEKO_DECLARE_PROTOCOL(StartSearchParameters, NEKO_NAMESPACE::JsonSerializer)
+    NEKO_DECLARE_PROTOCOL(StartSearchParameters, NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Start search Parameters
 
 // define struct for Stop search
 struct StopSearchParameters {
     uint64_t id = {};  // ID of the search job
     NEKO_SERIALIZER(id)
-    NEKO_DECLARE_PROTOCOL(StopSearchParameters, NEKO_NAMESPACE::JsonSerializer)
+    NEKO_DECLARE_PROTOCOL(StopSearchParameters, NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Stop search Parameters
 
 // define struct for Get search status
@@ -1068,7 +1068,7 @@ struct GetSearchStatusParameters {
                        // jobs are returned
     NEKO_SERIALIZER(id)
     NEKO_DECLARE_PROTOCOL(GetSearchStatusParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get search status Parameters
 
 // define struct for Get search results
@@ -1081,7 +1081,7 @@ struct GetSearchResultsParameters {
              // (e.g. `-2` returns the 2 most recent results)
     NEKO_SERIALIZER(id, limit, offset)
     NEKO_DECLARE_PROTOCOL(GetSearchResultsParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Get search results Parameters
 
 // define struct for Delete search
@@ -1089,7 +1089,7 @@ struct DeleteSearchParameters {
     uint64_t id = {};  // ID of the search job
     NEKO_SERIALIZER(id)
     NEKO_DECLARE_PROTOCOL(DeleteSearchParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Delete search Parameters
 
 // define struct for Install search plugin
@@ -1100,7 +1100,7 @@ struct InstallSearchPluginParameters {
              // Supports multiple sources separated by `\|`
     NEKO_SERIALIZER(sources)
     NEKO_DECLARE_PROTOCOL(InstallSearchPluginParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Install search plugin Parameters
 
 // define struct for Uninstall search plugin
@@ -1110,7 +1110,7 @@ struct UninstallSearchPluginParameters {
              // multiple names separated by `\|`
     NEKO_SERIALIZER(names)
     NEKO_DECLARE_PROTOCOL(UninstallSearchPluginParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Uninstall search plugin Parameters
 
 // define struct for Enable search plugin
@@ -1121,7 +1121,7 @@ struct EnableSearchPluginParameters {
     bool enable = {};  // Whether the plugins should be enabled
     NEKO_SERIALIZER(names, enable)
     NEKO_DECLARE_PROTOCOL(EnableSearchPluginParameters,
-                          NEKO_NAMESPACE::JsonSerializer)
+                          NEKO_NAMESPACE::ParametersSerializer)
 };  // the end of Enable search plugin Parameters
 
 struct Category {

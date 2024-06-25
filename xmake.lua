@@ -1,17 +1,29 @@
 add_rules("mode.debug", "mode.release")
-add_requires("qt6base", "spdlog", "rapidjson")
+add_requires("qt6base", "spdlog", "rapidjson", "zlib")
 
 includes("bittorrent")
+set_languages("c++20")
+
+add_defines("ILIAS_COROUTINE_LIFETIME_CHECK")
 
 target("qdht")
     add_rules("qt.quickapp")
-    add_packages("qt6base")
+        if is_plat("linux") then 
+        add_cxxflags("-fcoroutines")
+    end
+    if is_plat("windows") then
+        add_files("./modules/Ilias/include/ilias_iocp.cpp")
+    end
+    add_packages("qt6base", "zlib", "spdlog", "rapidjson")
+    add_defines("NEKO_PROTO_STATIC")
+    add_includedirs("./modules/Ilias/include/", "./modules/NekoProtoTools/core/")
+    add_files("./modules/NekoProtoTools/src/proto_base.cpp")
+    add_files("bittorrent/session.cpp")
     add_headerfiles("src/*.h")
     add_files("src/*.cpp")
     add_files("src/qml.qrc")
 target_end()
 
-add_requires("zlib")
 target("test_bittorrent")
     set_kind("binary")
     if is_plat("linux") then 
@@ -20,13 +32,12 @@ target("test_bittorrent")
     if is_plat("windows") then
         add_files("./modules/Ilias/include/ilias_iocp.cpp")
     end
+    add_deps("bittorrent")
     add_packages("zlib", "spdlog", "rapidjson")
-    set_languages("c++20")
-    add_defines("ILIAS_COROUTINE_LIFETIME_CHECK")
+    add_defines("NEKO_PROTO_STATIC")
     add_includedirs("./modules/Ilias/include/", "./modules/NekoProtoTools/core/")
     add_files("./modules/NekoProtoTools/src/proto_base.cpp")
     add_files("tests/test_bittorrent.cpp")
-    add_files("bittorrent/session.cpp")
 target_end()
 
 --
