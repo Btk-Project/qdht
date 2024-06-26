@@ -34,13 +34,12 @@
 // All Transfer info API methods are under path: /api/v2/transfer/
 #define QB_GET_GLOBAL_TRANSFER_INFO           "/api/v2/transfer/info"
 #define QB_GET_ALTERNATIVE_SPEED_LIMITS_STATE "/api/v2/transfer/speedLimitsMode"
-#define QB_TOGGLE_ALTERNATIVE_SPEED_LIMITS \
-    "/api/v2/transfer/toggleSpeedLimitsMode"
-#define QB_GET_GLOBAL_DOWNLOAD_LIMIT "/api/v2/transfer/downloadLimit"
-#define QB_SET_GLOBAL_DOWNLOAD_LIMIT "/api/v2/transfer/setDownloadLimit"
-#define QB_GET_GLOBAL_UPLOAD_LIMIT   "/api/v2/transfer/uploadLimit"
-#define QB_SET_GLOBAL_UPLOAD_LIMIT   "/api/v2/transfer/setUploadLimit"
-#define QB_BAN_PEERS                 "/api/v2/transfer/banPeers"
+#define QB_TOGGLE_ALTERNATIVE_SPEED_LIMITS    "/api/v2/transfer/toggleSpeedLimitsMode"
+#define QB_GET_GLOBAL_DOWNLOAD_LIMIT          "/api/v2/transfer/downloadLimit"
+#define QB_SET_GLOBAL_DOWNLOAD_LIMIT          "/api/v2/transfer/setDownloadLimit"
+#define QB_GET_GLOBAL_UPLOAD_LIMIT            "/api/v2/transfer/uploadLimit"
+#define QB_SET_GLOBAL_UPLOAD_LIMIT            "/api/v2/transfer/setUploadLimit"
+#define QB_BAN_PEERS                          "/api/v2/transfer/banPeers"
 
 // All Torrent management API methods are under path: /api/v2/torrents/
 #define QB_GET_TORRENT_LIST               "/api/v2/torrents/info"
@@ -65,12 +64,10 @@
 #define QB_SET_FILE_PRIORITY              "/api/v2/torrents/filePrio"
 #define QB_GET_ALL_CATEGORIES             "/api/v2/torrents/categories"
 #define QB_GET_ALL_TAGS                   "/api/v2/torrents/tags"
-#define QB_TOGGLE_SEQUENTIAL_DOWNLOAD \
-    "/api/v2/torrents/toggleSequentialDownload"
-#define QB_SET_FIRST_LAST_PIECE_PRIORITY \
-    "/api/v2/torrents/toggleFirstLastPiecePrio"
-#define QB_RENAME_FILE   "/api/v2/torrents/renameFile"
-#define QB_RENAME_FOLDER "/api/v2/torrents/renameFolder"
+#define QB_TOGGLE_SEQUENTIAL_DOWNLOAD     "/api/v2/torrents/toggleSequentialDownload"
+#define QB_SET_FIRST_LAST_PIECE_PRIORITY  "/api/v2/torrents/toggleFirstLastPiecePrio"
+#define QB_RENAME_FILE                    "/api/v2/torrents/renameFile"
+#define QB_RENAME_FOLDER                  "/api/v2/torrents/renameFolder"
 
 // All RSS (experimental) API methods are under path: /api/v2/rss/
 #define QB_ADD_FOLDER                       "/api/v2/rss/addFolder"
@@ -279,7 +276,7 @@ struct GetApplicationPreferencesReturns {
     int64_t web_ui_port        = {};  // WebUI port
     bool web_ui_upnp           = {};  // True if UPnP is used for the WebUI port
     std::string web_ui_username = {};  // WebUI username
-    std::string web_ui_password =
+    std::optional<std::string> web_ui_password =
         {};  // For API ≥ v2.3.0: Plaintext WebUI password, not readable,
              // write-only. For API < v2.3.0: MD5 hash of WebUI password, hash
              // is generated from the following string: `username:Web UI
@@ -443,13 +440,20 @@ struct GetApplicationPreferencesReturns {
                           NEKO_NAMESPACE::JsonSerializer)
 };  // the end of Set application preferences Returns
 
+struct SetApplicationPreferencesParameters {
+    GetApplicationPreferencesReturns json;
+    NEKO_SERIALIZER(json)
+    NEKO_DECLARE_PROTOCOL(SetApplicationPreferencesParameters,
+                          NEKO_NAMESPACE::ParametersSerializer);
+};
+
 // define struct for Get log
 struct GetLogParameters {
-    bool normal           = {};  // Include normal messages (default: `true`)
-    bool info             = {};  // Include info messages (default: `true`)
-    bool warning          = {};  // Include warning messages (default: `true`)
-    bool critical         = {};  // Include critical messages (default: `true`)
-    int64_t last_known_id = {};  // Exclude messages with "message id" <=
+    bool normal           = {true};  // Include normal messages (default: `true`)
+    bool info             = {true};  // Include info messages (default: `true`)
+    bool warning          = {true};  // Include warning messages (default: `true`)
+    bool critical         = {true};  // Include critical messages (default: `true`)
+    int64_t last_known_id = {-1};  // Exclude messages with "message id" <=
                                  // `last_known_id` (default: `-1`)
     NEKO_SERIALIZER(normal, info, warning, critical, last_known_id)
     NEKO_DECLARE_PROTOCOL(GetLogParameters, NEKO_NAMESPACE::ParametersSerializer)

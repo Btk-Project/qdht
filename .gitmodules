@@ -1,0 +1,6 @@
+[submodule "modules/Ilias"]
+	path = modules/Ilias
+	url = ../../BusyStudent/Ilias.git
+[submodule "modules/NekoProtoTools"]
+	path = modules/NekoProtoTools
+	url = ../../liuli-neko/NekoProtoTools.git

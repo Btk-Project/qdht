@@ -17,30 +17,61 @@ int main(int argc, char** argv) {
         std::cout << "failed to login: " << ret << std::endl;
         return 0;
     } else {
-        std::cout << "successfully logged in , token: " << session.token()
-                  << std::endl;
+        std::cout << "successfully logged in , token: " << session.token() << std::endl;
     }
 
-    GetBuildInfoReturns buildInfo;
     auto reply = ilias_wait session.request(QB_GET_BUILD_INFO);
     if (reply) {
-        buildInfo.makeProto().formData(std::vector<char>{
-            reply.value().data(), reply.value().data() + reply.value().size()});
+        GetBuildInfoReturns buildInfo;
+        buildInfo.makeProto().formData(
+            std::vector<char>{reply.value().data(), reply.value().data() + reply.value().size()});
+        std::cout << NEKO_NAMESPACE::SerializableToString(buildInfo) << std::endl;
+    } else {
+        std::cout << "failed to get build info" << reply.error().message() << std::endl;
     }
-    std::cout << reply.value() << std::endl;
-    std::cout << NEKO_NAMESPACE::SerializableToString(buildInfo) << std::endl;
 
     GetTorrentListParameters params;
     params.filter = "all";
     params.limit  = 30;
-    auto reply1   = ilias_wait session.request(QB_GET_TORRENT_LIST,
-                                               params.makeProto().toData());
+    auto reply1   = ilias_wait session.request(QB_GET_TORRENT_LIST, params.makeProto().toData());
     if (reply1) {
-        std::vector<GetTorrentListReturns> list =
-            NEKO_NAMESPACE::ListFromData<GetTorrentListReturns>(reply1.value());
+        std::vector<GetTorrentListReturns> list = NEKO_NAMESPACE::ListFromData<GetTorrentListReturns>(reply1.value());
         for (const auto& f : list) {
             std::cout << NEKO_NAMESPACE::SerializableToString(f) << std::endl;
         }
+    } else {
+        std::cout << "failed to get torrent list" << reply1.error().message() << std::endl;
+    }
+
+    GetApplicationPreferencesReturns prefs;
+    auto reply2 = ilias_wait session.request(QB_GET_APPLICATION_PREFERENCES);
+    if (reply2) {
+        prefs.makeProto().formData(
+            std::vector<char>{reply2.value().data(), reply2.value().data() + reply2.value().size()});
+        std::cout << NEKO_NAMESPACE::SerializableToString(prefs) << std::endl;
+    } else {
+        std::cout << "failed to get application preferences " << reply2.error().message() << std::endl;
+    }
+
+    SetApplicationPreferencesParameters sprefs;
+    prefs.web_ui_custom_http_headers = "";
+    sprefs.json                      = prefs;
+    auto reply3 = ilias_wait session.request(QB_SET_APPLICATION_PREFERENCES, sprefs.makeProto().toData());
+    if (reply3) {
+        std::cout << "successfully set application preferences " << reply3.value() << std::endl;
+    } else {
+        std::cout << "failed to set application preferences " << reply3.error().message() << std::endl;
+    }
+
+    GetLogParameters logParams;
+    auto reply4 = ilias_wait session.request(QB_GET_LOG, logParams.makeProto().toData());
+    if (reply4) {
+        std::vector<GetLogReturns> logs = NEKO_NAMESPACE::ListFromData<GetLogReturns>(reply4.value());
+        for (const auto& f : logs) {
+            std::cout << NEKO_NAMESPACE::SerializableToString(f) << std::endl;
+        }
+    } else {
+        std::cout << "failed to get log " << reply4.error().message() << std::endl;
     }
 
     ret = session.logout();
