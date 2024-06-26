@@ -32,37 +32,27 @@ auto QBErrorCategory::message(uint32_t value) const -> std::string {
 }
 
 auto QBErrorCategory::name() const -> std::string_view { return "QBittorrent"; }
-auto QBErrorCategory::equivalent(uint32_t self,
-                                 const ILIAS_NAMESPACE::Error& other) const
-    -> bool {
-    return other.category().name() == name() &&
-           self == static_cast<uint32_t>(other.value());
+auto QBErrorCategory::equivalent(uint32_t self, const ILIAS_NAMESPACE::Error& other) const -> bool {
+    return other.category().name() == name() && self == static_cast<uint32_t>(other.value());
 }
 
-QBittorrentSession::QBittorrentSession(Ilias::IoContext& ioContext)
-    : mIoCtxt(&ioContext), mHttpSession(ioContext) {
+QBittorrentSession::QBittorrentSession(Ilias::IoContext& ioContext) : mIoCtxt(&ioContext), mHttpSession(ioContext) {
     mHttpSession.setCookieJar(&mCookies);
 }
 
-QBittorrentSession::QBittorrentSession()
-    : mIoCtxt(Ilias::IoContext::instance()), mHttpSession(*mIoCtxt) {
+QBittorrentSession::QBittorrentSession() : mIoCtxt(Ilias::IoContext::instance()), mHttpSession(*mIoCtxt) {
     mHttpSession.setCookieJar(&mCookies);
 }
 
-auto QBittorrentSession::login(const LoginParameters& loginInfo)
-    -> QBittorrentSession::Error {
-    auto ret = ilias_wait request(
-        QB_LOGIN, LoginParameters::makeProto(loginInfo).toData());
+auto QBittorrentSession::login(const LoginParameters& loginInfo) -> QBittorrentSession::Error {
+    auto ret = ilias_wait request(QB_LOGIN, LoginParameters::makeProto(loginInfo).toData());
     if (!ret) {
         return UnknownError;
     }
     auto allCookies = mCookies.allCookies();
-    for (auto& cookie : allCookies)
-        NEKO_LOG_INFO("cookie: {}:{}", cookie.name(), cookie.value());
+    for (auto& cookie : allCookies) NEKO_LOG_INFO("cookie: {}:{}", cookie.name(), cookie.value());
     auto it = std::find_if(allCookies.begin(), allCookies.end(),
-                           [this](const Ilias::HttpCookie& cookie) {
-                               return cookie.name() == "SID";
-                           });
+                           [this](const Ilias::HttpCookie& cookie) { return cookie.name() == "SID"; });
     if (it == allCookies.end()) {
         NEKO_LOG_ERROR("login failed: no sid cookie");
         return UnknownError;
@@ -88,30 +78,23 @@ void QBittorrentSession::setTimeout(int timeout) { mTimeout = timeout; }
 
 auto QBittorrentSession::token() const -> std::string { return mToken; }
 
-auto QBittorrentSession::request(std::string_view path,
-                                 const std::vector<char>& data)
-    -> Ilias::Task<std::string> {
+auto QBittorrentSession::request(std::string_view path, const std::vector<char>& data) -> Ilias::Task<std::string> {
     Ilias::HttpRequest request(makeRequestUrl(path).c_str());
     request.setOperation(Ilias::HttpRequest::Operation::POST);
-    request.setHeader(Ilias::HttpRequest::Referer,
-                      mHost == "" ? "http://localhost" : mHost);
-    request.setHeader(Ilias::HttpRequest::ContentType,
-                      "application/x-www-form-urlencoded");
+    request.setHeader(Ilias::HttpRequest::Referer, mHost);
+    request.setHeader(Ilias::HttpRequest::ContentType, "application/x-www-form-urlencoded");
     request.setHeader(Ilias::HttpRequest::Accept, "*/*");
     request.setHeader(Ilias::HttpRequest::UserAgent, USER_AGENT);
     auto ret = co_await mHttpSession.post(
-        request, data.size() > 0 ? std::string_view{data.data(), data.size()}
-                                 : std::string_view());
+        request, data.size() > 0 ? std::string_view{data.data(), data.size()} : std::string_view());
     if (!ret) {
         NEKO_LOG_ERROR("request {} failed: {}", path, ret.error().message());
         co_return ret.error();
     } else if (ret.value().statusCode() == 403) {
-        NEKO_LOG_ERROR("request {} failed: {}", path,
-                       (ilias_wait ret.value().text()).value());
+        NEKO_LOG_ERROR("request {} failed: {}", path, (ilias_wait ret.value().text()).value());
         co_return Ilias::Unexpected(Error::ERROR403);
     } else if (ret.value().statusCode() != 200) {
-        NEKO_LOG_ERROR("request {} failed: {}", path,
-                       (ilias_wait ret.value().text()).value());
+        NEKO_LOG_ERROR("request {} failed: {}", path, (ilias_wait ret.value().text()).value());
         co_return Ilias::Unexpected(Error::UnknownError);
     }
     auto ret1 = co_await ret.value().text();
@@ -122,13 +105,6 @@ auto QBittorrentSession::request(std::string_view path,
     co_return ret1.value();
 }
 
-auto QBittorrentSession::makeRequestUrl(std::string_view path) const
-    -> std::string {
-    char requestUrl[256] = {0};
-    auto port            = mPort == 0 ? 8080 : mPort;
-    auto host            = mHost.empty() ? "http://localhost" : mHost.c_str();
-    std::snprintf(requestUrl, 255, "%s:%d%.*s", host, port, path.size(),
-                  path.data());
-    NEKO_LOG_INFO("request url: {}", requestUrl);
-    return std::string(requestUrl);
+auto QBittorrentSession::makeRequestUrl(std::string_view path) const -> std::string {
+    return mHost + ":" + std::to_string(mPort) + std::string(path);
 }

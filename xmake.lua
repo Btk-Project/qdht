@@ -1,4 +1,8 @@
+set_project("qdht")
+set_version("0.1.0")
+
 add_rules("mode.debug", "mode.release")
+add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 add_requires("qt6base", "spdlog", "rapidjson", "zlib")
 
 includes("bittorrent")
@@ -19,7 +23,6 @@ target("qdht")
     add_includedirs("./modules/Ilias/include/", "./modules/NekoProtoTools/core/")
     add_files("./modules/NekoProtoTools/src/proto_base.cpp")
     add_files("bittorrent/session.cpp")
-    add_headerfiles("src/*.h")
     add_files("src/*.cpp")
     add_files("src/qml.qrc")
 target_end()
