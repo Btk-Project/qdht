@@ -35,6 +35,9 @@ int main(int argc, char** argv) {
     params.limit  = 30;
     auto reply1   = ilias_wait session.request(QB_GET_TORRENT_LIST, params.makeProto().toData());
     if (reply1) {
+        std::ofstream out("TorrentList.json", std::ios::out | std::ios::binary);
+        out.write(reply1.value().data(), reply1.value().size());
+        out.close();
         std::vector<GetTorrentListReturns> list = NEKO_NAMESPACE::ListFromData<GetTorrentListReturns>(reply1.value());
         for (const auto& f : list) {
             std::cout << NEKO_NAMESPACE::SerializableToString(f) << std::endl;
@@ -46,6 +49,9 @@ int main(int argc, char** argv) {
     GetApplicationPreferencesReturns prefs;
     auto reply2 = ilias_wait session.request(QB_GET_APPLICATION_PREFERENCES);
     if (reply2) {
+        std::ofstream out("prefs.json", std::ios::out | std::ios::binary);
+        out.write(reply2.value().data(), reply2.value().size());
+        out.close();
         prefs.makeProto().formData(
             std::vector<char>{reply2.value().data(), reply2.value().data() + reply2.value().size()});
         std::cout << NEKO_NAMESPACE::SerializableToString(prefs) << std::endl;

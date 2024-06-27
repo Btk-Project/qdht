@@ -115,11 +115,13 @@ struct GetBuildInfoReturns {
 };  // the end of Shutdown application Returns
     // clang-format off
 
+typedef std::map<std::string, ScanDir> ScanDirs;
+
 // define struct for Get application preferences
 struct GetApplicationPreferencesReturns {
     std::string locale =
         {};  // Currently selected language (e.g. en_GB for English)
-    bool create_subfolder_enabled =
+    std::optional<bool> create_subfolder_enabled =
         {};  // True if a subfolder should be created when adding a torrent
     bool start_paused_enabled =
         {};  // True if torrents should be added in a Paused state
@@ -197,7 +199,7 @@ struct GetApplicationPreferencesReturns {
     int64_t slow_torrent_inactive_timer =
         {};  // Seconds a torrent should be inactive before considered "slow"
     bool max_ratio_enabled = {};  // True if share ratio limit is enabled
-    double max_ratio       = {};  // Get the global share ratio limit
+    std::optional<double> max_ratio       = {};  // Get the global share ratio limit
     int64_t max_ratio_act =
         {};  // Action performed when a torrent reaches the maximum share ratio.
              // See list of possible values here below.
@@ -251,7 +253,7 @@ struct GetApplicationPreferencesReturns {
         {};  // If true anonymous mode will be enabled; read more
              // [here](Anonymous-Mode); this option is only available in
              // qBittorent built against libtorrent version 0.16.X and higher
-    int64_t proxy_type   = {};  // See list of possible values here below
+    std::optional<int64_t> proxy_type   = {};  // See list of possible values here below
     std::string proxy_ip = {};  // Proxy IP address or domain name
     int64_t proxy_port   = {};  // Proxy port
     bool proxy_peer_connections =
@@ -262,7 +264,7 @@ struct GetApplicationPreferencesReturns {
                                       // doesn't apply to SOCKS4 proxies
     std::string proxy_username = {};  // Username for proxy authentication
     std::string proxy_password = {};  // Password for proxy authentication
-    bool proxy_torrents_only   = {};  // True if proxy is only used for torrents
+    std::optional<bool> proxy_torrents_only   = {};  // True if proxy is only used for torrents
     bool ip_filter_enabled =
         {};  // True if external IP filter should be enabled
     std::string ip_filter_path =
@@ -310,9 +312,9 @@ struct GetApplicationPreferencesReturns {
     std::string alternative_webui_path =
         {};               // File path to the alternative WebUI
     bool use_https = {};  // True if WebUI HTTPS access is enabled
-    std::string ssl_key =
+    std::optional<std::string> ssl_key =
         {};  // For API < v2.0.1: SSL keyfile contents (this is a not a path)
-    std::string ssl_cert = {};  // For API < v2.0.1: SSL certificate contents
+    std::optional<std::string> ssl_cert = {};  // For API < v2.0.1: SSL certificate contents
                                 // (this is a not a path)
     std::string web_ui_https_key_path =
         {};  // For API ≥ v2.0.1: Path to SSL keyfile
@@ -361,7 +363,7 @@ struct GetApplicationPreferencesReturns {
     bool enable_embedded_tracker = {};  // True enables embedded tracker
     bool enable_multi_connections_from_same_ip =
         {};  // True allows multiple connections from the same IP address
-    bool enable_os_cache = {};  // True enables os cache
+    std::optional<bool> enable_os_cache = {};  // True enables os cache
     bool enable_upload_suggestions =
         {};  // True enables sending of upload piece suggestions
     int64_t file_pool_size     = {};  // File pool size
@@ -473,7 +475,7 @@ struct GetLogReturns {
 
 // define struct for Get peer log
 struct GetPeerLogParameters {
-    int64_t last_known_id = {};  // Exclude messages with "message id" <=
+    int64_t last_known_id = {-1};  // Exclude messages with "message id" <=
                                  // `last_known_id` (default: `-1`)
     NEKO_SERIALIZER(last_known_id)
     NEKO_DECLARE_PROTOCOL(GetPeerLogParameters, NEKO_NAMESPACE::ParametersSerializer)
@@ -619,7 +621,7 @@ struct GetTorrentListReturns {
     bool f_l_piece_prio = {};  // True if first last piece are prioritized
     bool force_start = {};  // True if force start is enabled for this torrent
     std::string hash = {};  // Torrent hash
-    bool isPrivate =
+    std::optional<bool> isPrivate =
         {};  // True if torrent is from a private tracker (added in 5.0.0)
     int64_t last_activity =
         {};  // Last time (Unix Epoch) when a chunk was downloaded/uploaded

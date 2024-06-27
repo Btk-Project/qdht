@@ -8,7 +8,7 @@
 #include "proto_base.hpp"
 #include "serializer_base.hpp"
 
-typedef std::variant<int, std::string> ScanDirs;
+typedef std::variant<int, std::string> ScanDir;
 
 NEKO_BEGIN_NAMESPACE
 
@@ -180,47 +180,6 @@ struct ParametersConvert<WriterT, ValueT, T,
     }
 };
 
-template <typename WriterT, typename ValueT>
-struct JsonConvert<WriterT, ValueT, ScanDirs, void> {
-    static bool toJsonValue(WriterT& writer, const ScanDirs value) {
-        if (std::holds_alternative<int>(value)) {
-            return writer.Int(std::get<int>(value));
-        }
-
-        if (std::holds_alternative<std::string>(value)) {
-            return writer.String(std::get<std::string>(value).c_str());
-        }
-        return false;
-    }
-    static bool fromJsonValue(ScanDirs* dst, const ValueT& value) {
-        if (value.IsInt()) {
-            std::get<int>(*dst) = value.GetInt();
-            return true;
-        }
-
-        if (value.IsString()) {
-            std::get<std::string>(*dst) = std::string(value.GetString(), value.GetStringLength());
-            return true;
-        }
-        return false;
-    }
-};
-
-template <>
-struct FormatStringCovert<ScanDirs, void> {
-    static std::string toString(const char* name, const size_t len, const ScanDirs& p) {
-        std::string ret;
-        if (len > 0) ret = std::string(name, len) + " = ";
-        if (std::holds_alternative<int>(p)) {
-            return ret + std::to_string(std::get<int>(p));
-        } else if (std::holds_alternative<std::string>(p)) {
-            return ret + "\"" + std::get<std::string>(p) + "\"";
-        } else {
-            return ret + "null";
-        }
-    }
-};
-
 template <typename T>
 std::vector<T> ListFromData(std::string_view data) {
     std::vector<T> ret;
@@ -228,12 +187,13 @@ std::vector<T> ListFromData(std::string_view data) {
     rapidjson::Document doc;
     doc.Parse(data.data(), data.size());
     if (doc.HasParseError()) {
+        NEKO_LOG_WARN("parse error: {}", (int)doc.GetParseError());
         return ret;
     }
-    if (!doc.IsArray()) {
+    if (!JsonConvert<JsonSerializer::WriterType, JsonSerializer::ValueType, std::vector<T>>::fromJsonValue(&ret, doc)) {
+        NEKO_LOG_WARN("parse error: not array");
         return ret;
     }
-    JsonConvert<JsonSerializer::WriterType, JsonSerializer::ValueType, std::vector<T>>::fromJsonValue(&ret, doc);
     return ret;
 }
 
