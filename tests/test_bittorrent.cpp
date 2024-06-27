@@ -10,6 +10,10 @@
 #include "to_string.hpp"
 
 int main(int argc, char** argv) {
+#ifdef _WIN32
+    SetConsoleOutputCP(CP_UTF8);
+    setlocale(LC_ALL, "en_US.UTF-8");
+#endif
     ILIAS_NAMESPACE::PlatformIoContext ioContext;
     QBittorrentSession session(ioContext);
     session.setHost("http://localhost");
