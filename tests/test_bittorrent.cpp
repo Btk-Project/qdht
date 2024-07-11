@@ -6,6 +6,8 @@
 #include "ilias_async.hpp"
 #include "ilias_http.hpp"
 #include "ilias_networking.hpp"
+#include "json_serializer.hpp"
+#include "to_string.hpp"
 
 int main(int argc, char** argv) {
     ILIAS_NAMESPACE::PlatformIoContext ioContext;
@@ -33,12 +35,18 @@ int main(int argc, char** argv) {
     GetTorrentListParameters params;
     params.filter = "all";
     params.limit  = 30;
-    auto reply1   = ilias_wait session.request(QB_GET_TORRENT_LIST, params.makeProto().toData());
+    auto d        = params.makeProto().toData();
+    d.push_back('\0');
+    std::cout << "data size " << d.size() << " d : " << d.data() << std::endl;
+    auto reply1 = ilias_wait session.request(QB_GET_TORRENT_LIST, params.makeProto().toData());
     if (reply1) {
         std::ofstream out("TorrentList.json", std::ios::out | std::ios::binary);
         out.write(reply1.value().data(), reply1.value().size());
         out.close();
-        std::vector<GetTorrentListReturns> list = NEKO_NAMESPACE::ListFromData<GetTorrentListReturns>(reply1.value());
+
+        std::vector<GetTorrentListReturns> list;
+        NEKO_NAMESPACE::JsonSerializer::InputSerializer is(reply1.value().data(), reply1.value().size());
+        load(is, list);
         for (const auto& f : list) {
             std::cout << NEKO_NAMESPACE::SerializableToString(f) << std::endl;
         }
@@ -72,7 +80,9 @@ int main(int argc, char** argv) {
     GetLogParameters logParams;
     auto reply4 = ilias_wait session.request(QB_GET_LOG, logParams.makeProto().toData());
     if (reply4) {
-        std::vector<GetLogReturns> logs = NEKO_NAMESPACE::ListFromData<GetLogReturns>(reply4.value());
+        std::vector<GetLogReturns> logs;
+        NEKO_NAMESPACE::JsonSerializer::InputSerializer is(reply4.value().data(), reply4.value().size());
+        load(is, logs);
         for (const auto& f : logs) {
             std::cout << NEKO_NAMESPACE::SerializableToString(f) << std::endl;
         }
@@ -84,7 +94,7 @@ int main(int argc, char** argv) {
     if (ret != QBittorrentSession::NoError) {
         std::cout << "failed to logout: " << ret << std::endl;
     } else {
-        std::cout << "successfully logged out" << std::endl;
+        std::cout << "success logout" << std::endl;
     }
     return 0;
 }

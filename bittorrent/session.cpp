@@ -89,7 +89,7 @@ auto QBittorrentSession::request(std::string_view path, const std::vector<char>&
         request, data.size() > 0 ? std::string_view{data.data(), data.size()} : std::string_view());
     if (!ret) {
         NEKO_LOG_ERROR("request {} failed: {}", path, ret.error().message());
-        co_return ret.error();
+        co_return ILIAS_NAMESPACE::Unexpected(ret.error());
     } else if (ret.value().statusCode() == 403) {
         NEKO_LOG_ERROR("request {} failed: {}", path, (ilias_wait ret.value().text()).value());
         co_return Ilias::Unexpected(Error::ERROR403);
@@ -100,7 +100,7 @@ auto QBittorrentSession::request(std::string_view path, const std::vector<char>&
     auto ret1 = co_await ret.value().text();
     if (!ret1) {
         NEKO_LOG_ERROR("request {} failed: {}", path, ret1.error().message());
-        co_return ret1.error();
+        co_return ILIAS_NAMESPACE::Unexpected(ret1.error());
     }
     co_return ret1.value();
 }

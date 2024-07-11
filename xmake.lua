@@ -9,6 +9,7 @@ includes("bittorrent")
 set_languages("c++20")
 
 add_defines("ILIAS_COROUTINE_LIFETIME_CHECK")
+add_defines("NEKO_JSON_MAKE_STR_NONE_TO_NULL")
 
 target("qdht")
     add_rules("qt.quickapp")

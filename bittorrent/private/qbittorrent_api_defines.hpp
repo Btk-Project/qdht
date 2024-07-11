@@ -5,10 +5,12 @@
 #include <string>
 
 #include "json_serializer.hpp"
-#include "json_serializer_container.hpp"
 #include "proto_base.hpp"
-#include "qbittorrent_api_object.hpp"
+#include "qbittorrent_api_helpers.hpp"
 #include "serializer_base.hpp"
+#include "types/map.hpp"
+#include "types/variant.hpp"
+#include "types/vector.hpp"
 
 // All Authentication API methods are under path: /api/v2/auth/
 #define QB_LOGIN  "/api/v2/auth/login"
@@ -253,7 +255,7 @@ struct GetApplicationPreferencesReturns {
         {};  // If true anonymous mode will be enabled; read more
              // [here](Anonymous-Mode); this option is only available in
              // qBittorent built against libtorrent version 0.16.X and higher
-    std::optional<int64_t> proxy_type   = {};  // See list of possible values here below
+    std::optional<std::string> proxy_type   = {};  // See list of possible values here below
     std::string proxy_ip = {};  // Proxy IP address or domain name
     int64_t proxy_port   = {};  // Proxy port
     bool proxy_peer_connections =
