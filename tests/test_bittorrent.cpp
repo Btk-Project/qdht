@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
         std::vector<GetTorrentListReturns> list;
         NEKO_NAMESPACE::JsonSerializer::InputSerializer is(reply1.value().data(), reply1.value().size());
-        load(is, list);
+        is(list);
         for (const auto& f : list) {
             std::cout << NEKO_NAMESPACE::SerializableToString(f) << std::endl;
         }
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
     if (reply4) {
         std::vector<GetLogReturns> logs;
         NEKO_NAMESPACE::JsonSerializer::InputSerializer is(reply4.value().data(), reply4.value().size());
-        load(is, logs);
+        is(logs);
         for (const auto& f : logs) {
             std::cout << NEKO_NAMESPACE::SerializableToString(f) << std::endl;
         }
